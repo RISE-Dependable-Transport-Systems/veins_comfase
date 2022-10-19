@@ -25,7 +25,8 @@
 #include "veins/base/messages/AirFrame_m.h"
 
 #include <queue>
-
+#include "/path_to_comfase/comfase/injectorVeins/injectorV.h"
+#include "veins/base/utils/FindModule.h"
 namespace veins {
 namespace SignalUtils {
 
@@ -149,6 +150,18 @@ double VEINS_API getMinSINR(simtime_t start, simtime_t end, AirFrame* signalFram
     Spectrum spectrum = signal.getSpectrum();
 
     Signal interference = getMaxInterference(start, end, signalFrame, interfererFrames);
+    auto comfase = FindModule<injectorV*>::findGlobalModule();
+    if (comfase->InterferenceAttack){
+        std::cout<<"Interference Attack = is Active"<<std::endl;
+        float fpower = comfase->InterfAttack(senderID, receiverID, interference.at(7));
+        interference.at(6) = fpower;
+        interference.at(7) = fpower;
+        interference.at(8) = fpower;
+    }
+    if (comfase->NoiseAttack){
+       std::cout<<"Noise Attack = is TRUE"<<std::endl;
+       noise = comfase->BarrageJammingAttack(27, 37, noise);
+    }
     Signal sinr = signal / (interference + noise);
 
     double min_sinr = INFINITY;
