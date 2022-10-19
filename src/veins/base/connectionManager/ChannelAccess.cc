@@ -27,7 +27,7 @@
 //                from this class and use the sendToChannel() function!!
 
 #include "veins/base/connectionManager/ChannelAccess.h"
-
+#include "/path_to_comfase/comfase/injectorVeins/injectorV.h"
 #include "veins/base/utils/FindModule.h"
 #include "veins/base/modules/BaseWorldUtility.h"
 #include "veins/base/connectionManager/BaseConnectionManager.h"
@@ -123,8 +123,21 @@ simtime_t ChannelAccess::calculatePropagationDelay(const NicEntry* nic)
     Coord senderPos = senderModule->antennaPosition.getPositionAt();
     Coord receiverPos = receiverModule->antennaPosition.getPositionAt();
 
+    auto comfase = FindModule<injectorV*>::findGlobalModule();
+    if (comfase->DelayAttack){
+        std::cout<<"Delay Attack = is TRUE"<<std::endl;
+        float correctValue = receiverPos.distance(senderPos) / BaseWorldUtility::speedOfLight();
+        return comfase->PropagationDelayAttack(senderModule->getId(), receiverModule->getId(), correctValue);
+    }
+    else if (comfase->DoSAttack){
+        std::cout<<"DoS Attack = is TRUE"<<std::endl;
+        float correctValue = receiverPos.distance(senderPos) / BaseWorldUtility::speedOfLight();
+        return comfase->DenialOfServiceAttack(senderModule->getId(), receiverModule->getId(), correctValue);
+    }
+    else{
     // this time-point is used to calculate the distance between sending and receiving host
-    return receiverPos.distance(senderPos) / BaseWorldUtility::speedOfLight();
+        return receiverPos.distance(senderPos) / BaseWorldUtility::speedOfLight();
+    }
 }
 
 void ChannelAccess::receiveSignal(cComponent* source, simsignal_t signalID, cObject* obj, cObject* details)
