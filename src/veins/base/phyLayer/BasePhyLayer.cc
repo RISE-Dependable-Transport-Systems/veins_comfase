@@ -23,7 +23,7 @@
 //
 
 #include "veins/base/phyLayer/BasePhyLayer.h"
-
+#include "/path_to_comfase/comfase/injectorVeins/injectorV.h"
 #include <string>
 #include <sstream>
 #include <vector>
@@ -646,7 +646,19 @@ void BasePhyLayer::filterSignal(AirFrame* frame)
     ASSERT(dynamic_cast<ChannelAccess* const>(frame->getArrivalModule()) == this);
     ASSERT(dynamic_cast<ChannelAccess* const>(frame->getSenderModule()));
     Signal& signal = frame->getSignal();
-
+    
+    auto comfase = FindModule<injectorV*>::findGlobalModule();
+    int receiverID = frame->getArrivalModuleId();
+    int senderID = frame->getSenderModuleId();
+    if (comfase->SignalPowerAttack){
+        std::cout<<"Signal Power Attack = is TRUE"<<std::endl;
+        float fpower = comfase->PowerAttack(senderID, receiverID, signal.at(7));
+        signal.at(6) *= fpower;
+        signal.at(7) *= fpower;
+        signal.at(8) *= fpower;
+    }
+    std::cout<<"Transmitter PowerValue is === "<<signal.at(6)<<" sender & Receiver ID= "<<senderID<<receiverID<<std::endl;
+    
     // Extract position and orientation of sender and receiver (this module) first
     const AntennaPosition receiverPosition = antennaPosition;
     const Coord receiverOrientation = antennaHeading.toCoord();
